@@ -104,35 +104,26 @@ def backward(y_hat, y, hidden_activations, x, out_W):
     :returns: the derivative updates to hidden_W, hidden_b, out_W and out_b
     """
 
-    n = len(y)  # Number of training examples
-
-    # Compute the error between predictions and true values
-    error = y_hat - y
-
-    # Mean squared error derivative wrt predictions
-    d_L_d_yhat = 2 * error / n
+    delta_output = - 2 * (y - y_hat) * d_linear(y_hat)
 
     # OUTPUT LAYER (Linear Activation)
 
-    # Compute gradients wrt output weights
-    d_L_d_ow = hidden_activations.T @ d_L_d_yhat
+    # gradients wrt output weights
+    d_L_d_ow = hidden_activations.T @ delta_output
 
-    # Compute gradients wrt output bias
-    d_L_d_ob = np.mean(d_L_d_yhat, axis=0)
+    # gradients wrt output bias
+    d_L_d_ob = np.sum(delta_output, axis=0)
 
     # HIDDEN LAYER (Sigmoid Activation)
 
-    # Compute error term for the hidden layer by propagating the output error backwards
-    hidden_error = d_L_d_yhat @ out_W.T
+    # delta term for the hidden layer
+    hidden_delta = delta_output @ out_W.T * d_sigmoid(hidden_activations)
 
-    # Compute delta term for the hidden layer (error term adjusted by sigmoid derivative)
-    hidden_delta = hidden_error * d_sigmoid(hidden_activations)
-
-    # Compute gradients wrt hidden weights
+    # gradients wrt hidden weights
     d_L_d_hw = x.T @ hidden_delta
 
-    # Compute gradients wrt hidden bias
-    d_L_d_hb = np.mean(hidden_delta, axis=0)
+    # gradients wrt hidden bias
+    d_L_d_hb = np.sum(hidden_delta, axis=0)
 
     return d_L_d_hw, d_L_d_hb, d_L_d_ow, d_L_d_ob
 
